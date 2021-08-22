@@ -34,8 +34,11 @@ try {
     $process = Start-Process $installerPath\postgresql-13.4-1.exe -ArgumentList "--mode unattended", "--unattendedmodeui none", "--enable-components pgAdmin,commandlinetools", "--disable-components server,stackbuilder", "--prefix `"$pgInstallPath`"" -PassThru -Wait;
     [string]$CurrentEnvPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine);
     # Add postgreSQL bin in PATH
+    Write-Host $process.ExitCode
     if ($process.ExitCode -eq 0)
     {
+        Write-Log -Message 'Installation completed' -LogFilePath $LogFilePath;
+        Remove-Item -path "$installerPath\postgresql-13.4-1.exe";
         if ($CurrentEnvPath -notlike "*$pgInstallPath\bin*")
         {
             [Environment]::SetEnvironmentVariable(
@@ -43,7 +46,10 @@ try {
             [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";"+ "$pgInstallPath\bin",
             [EnvironmentVariableTarget]::Machine)
         }
-        Remove-Item '$installerPath\postgresql-13.4-1.exe';
+    }
+    else
+    {
+        Write-Log -Message 'Installation not completed. Please investigate.' -LogFilePath $LogFilePath;
     }
 }
 catch
